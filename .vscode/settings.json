@@ -1,0 +1,7 @@
+{
+  "python.defaultInterpreterPath": "C:\\Users\\13410\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+  "python.terminal.activateEnvironment": false,
+  "terminal.integrated.env.windows": {
+    "Path": "C:\\Users\\13410\\AppData\\Local\\Programs\\Python\\Python313;C:\\Users\\13410\\AppData\\Local\\Programs\\Python\\Python313\\Scripts;C:\\msys64\\mingw64\\bin;${env:Path}"
+  }
+}

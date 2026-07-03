@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run active C++ file",
+      "type": "node-terminal",
+      "request": "launch",
+      "cwd": "${fileDirname}",
+      "command": "& \"C:\\msys64\\mingw64\\bin\\g++.exe\" \"${file}\" -O2 -o \"${fileDirname}\\${fileBasenameNoExtension}.exe\"; if ($LASTEXITCODE -eq 0) { & \"${fileDirname}\\${fileBasenameNoExtension}.exe\" }"
+    }
+  ]
+}
