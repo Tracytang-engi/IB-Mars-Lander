@@ -19,9 +19,53 @@ using namespace std;
 
 void autopilot (void)
   // Autopilot to adjust the engine throttle, parachute and attitude control
-{
-  // INSERT YOUR CODE HERE
+{//define variables
+double Kh = 0.020;
+double Kp = 0.2;
+double delta = 0.35;
+static ofstream autopilot_log;
+static bool autopilot_log_initialized = false;
+vector3d e_r = position.norm();
+double h = position.abs() - MARS_RADIUS;
+double v_r = velocity * e_r;//vector3d dot product re-defined.
+double v_target = -(0.5 + Kh * h);
+double e = -(0.5 + Kh * h + v_r);
+double P_out = Kp * e;
+
+// Minimal-intrusion logging for Assignment 5 analysis in Python
+if (!autopilot_log_initialized || simulation_time <= 0.0) {
+  if (autopilot_log.is_open()) autopilot_log.close();
+  autopilot_log.open("autopilot_descent_log.txt");
+  if (autopilot_log) {
+    autopilot_log << "time_s altitude_m v_r_mps v_target_mps throttle\n";
+  }
+  autopilot_log_initialized = true;
 }
+
+//强制简化条件：
+stabilized_attitude = true;
+parachute_status = NOT_DEPLOYED;
+
+//define throttle function
+  if (P_out <= -delta) {
+    throttle = 0;
+  } else if (P_out >= 1-delta) {
+    throttle = 1;
+  } else {
+    throttle = delta + P_out;
+  }
+  if (throttle < 0.0) throttle = 0.0;
+  if (throttle > 1.0) throttle = 1.0;
+
+  if (autopilot_log && (scenario == 1 || scenario == 5)) {
+    autopilot_log << simulation_time << " "
+                  << h << " "
+                  << v_r << " "
+                  << v_target << " "
+                  << throttle << "\n";
+  }
+}
+
 
 void numerical_dynamics (void)
   // This is the function that performs the numerical integration to update the
@@ -99,7 +143,7 @@ void initialize_simulation (void)
   scenario_description[3] = "polar launch at escape velocity (but drag prevents escape)";
   scenario_description[4] = "elliptical orbit that clips the atmosphere and decays";
   scenario_description[5] = "descent from 200km";
-  scenario_description[6] = "";
+  scenario_description[6] = "areostationary orbit";
   scenario_description[7] = "";
   scenario_description[8] = "";
   scenario_description[9] = "";
@@ -173,6 +217,21 @@ void initialize_simulation (void)
     break;
 
   case 6:
+    // areostationary orbit
+    {
+      double T_stationary = MARS_DAY; // orbital period (s)
+      double r_stationary = cbrt((GRAVITY * MARS_MASS * T_stationary * T_stationary) /
+                                 (4.0 * M_PI * M_PI));
+      double v_stationary = sqrt((GRAVITY * MARS_MASS) / r_stationary);
+      // Equatorial orbit in x-y plane
+      position = vector3d(r_stationary, 0.0, 0.0);
+      velocity = vector3d(0.0, -v_stationary, 0.0);
+    }
+    orientation = vector3d(0.0, 90.0, 0.0);
+    delta_t = 0.1;
+    parachute_status = NOT_DEPLOYED;
+    stabilized_attitude = false;
+    autopilot_enabled = false;
     break;
 
   case 7:
